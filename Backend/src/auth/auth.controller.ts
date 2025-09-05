@@ -5,19 +5,20 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
-
+import { Response } from 'express';
+import { Res } from '@nestjs/common';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
+    return this.authService.register(dto,res);
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    return this.authService.login(dto,res);
   }
 
   @Post('forgot-password')

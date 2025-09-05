@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-
+import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,7 +25,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload, { expiresIn: '60m' });
   }       
   // REGISTER
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, res: Response) {
     const { fullName, email, password, confirmPassword } = dto;
 
     if (password !== confirmPassword) {
@@ -47,11 +47,17 @@ export class AuthService {
       },
     });
     const token = await this.signToken(user.id, user.email);
-    return { message: 'Account created successfully', token };
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: false, // Set to true in production (requires HTTPS)
+      sameSite: 'lax',
+      expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour
+    });
+    return { message: 'Account created successfully' };
   }
 
   // LOGIN
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, res: Response) {
     const { email, password } = dto;
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -64,7 +70,13 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
     const token = await this.signToken(user.id, user.email);
-    return { message: 'Login successful', token };
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: false, // Set to true in production (requires HTTPS)
+      sameSite: 'lax',
+      expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour
+    });
+    return { message: 'Login successful'};
   }
 
   // FORGOT PASSWORD or RESEND OTP
