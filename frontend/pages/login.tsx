@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { useRouter } from "next/router";
 import styles from "../styles/Login.module.css"; // Make sure the path matches your file
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,7 @@ export default function LoginPage() {
         password,
       });
       setMessage(response.data.message || 'Login successful');
+      router.push('/home');
       // Optionally redirect here, e.g. router.push('/home');
     } catch (err: any) {
       setMessage(err.response?.data?.message || 'Login failed');
